@@ -1,0 +1,49 @@
+from langchain_groq import ChatGroq
+from dotenv import load_dotenv
+from langchain_core.prompts import PromptTemplate, MessagesPlaceholder
+import streamlit as st
+
+
+load_dotenv()
+
+llm = ChatGroq(
+    model="llama-3.1-8b-instant"
+    )
+
+
+st.title('Reasearch Paper Tool')
+
+paper = st.selectbox( "Select Research Paper Name", ["Attention Is All You Need", "BERT: Pre-training of Deep Bidirectional Transformers", "GPT-3: Language Models are Few-Shot Learners", "Diffusion Models Beat GANs on Image Synthesis"] )
+
+style = st.selectbox( "Select Explanation Style", ["Beginner-Friendly", "Technical", "Code-Oriented", "Mathematical"] ) 
+
+length = st.selectbox( "Select Explanation Length", ["1-2 paragraphs", "3-5 paragraphs", "detailed explanation"] )
+
+
+
+prompt = PromptTemplate(
+    template="""
+Please summarize the research paper titled "{paper}" with the following specifications:
+Explanation Style: {style}  
+Explanation Length: {length}  
+1. Mathematical Details:  
+   - Include relevant mathematical equations if present in the paper.  
+   - Explain the mathematical concepts using simple, intuitive code snippets where applicable.  
+2. Analogies:  
+   - Use relatable analogies to simplify complex ideas.  
+If certain information is not available in the paper, respond with: "Insufficient information available" instead of guessing.  
+Ensure the summary is clear, accurate, and aligned with the provided style and length.
+""",
+input_variables=['paper', 'style','length'],
+validate_template=True
+)
+
+
+if st.button('Summarize'):
+    lg_chain = prompt | llm
+    lg_result = lg_chain.invoke({
+        'paper':paper,
+        'style':style,
+        'length':length
+    })
+    st.write(lg_result.content)
